@@ -7,6 +7,7 @@ allowing AI assistants to query and analyze the data.
 """
 
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -789,9 +790,14 @@ def main():
         print("Environment Variables:")
         print("  RAPID7_API_KEY   Your Rapid7 InsightVM API key (required)")
         print("  RAPID7_REGION    Your Rapid7 region: us, eu, ca, au, or ap (required)")
+        print("  MCP_TRANSPORT    MCP transport to use: stdio (default), http, sse, or streamable-http")
+        print("  MCP_HOST         Host to bind for HTTP transports (default: 127.0.0.1)")
+        print("  MCP_PORT         Port to bind for HTTP transports (default: 8000)")
+        print("  MCP_PATH         Path to serve for HTTP transports (optional)")
         print()
         print("Example:")
         print("  rapid7-mcp-server /path/to/rapid7_bulk_export.db")
+        print("  MCP_TRANSPORT=streamable-http MCP_HOST=0.0.0.0 MCP_PORT=8000 rapid7-mcp-server")
         print()
         print("The server communicates via stdio using the Model Context Protocol.")
         print("It should be configured in your MCP client (e.g., Kiro, Claude Desktop).")
@@ -810,8 +816,25 @@ def main():
         print(f"Warning: Could not initialize database: {e}", file=sys.stderr)
         print("Database will be created when data is loaded.", file=sys.stderr)
 
-    # Run the FastMCP server
-    mcp.run()
+    transport = os.environ.get("MCP_TRANSPORT", "stdio").strip().lower()
+    if transport in {"http", "sse", "streamable-http"}:
+        host = os.environ.get("MCP_HOST", "127.0.0.1").strip() or "127.0.0.1"
+        port = int(os.environ.get("MCP_PORT", "8000"))
+        path = os.environ.get("MCP_PATH", "").strip() or None
+
+        print(
+            f"Starting MCP over {transport} on http://{host}:{port}{path or ''}",
+            file=sys.stderr,
+        )
+        mcp.run(
+            transport=transport,
+            host=host,
+            port=port,
+            path=path,
+        )
+    else:
+        # Default local stdio mode for desktop MCP clients.
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
