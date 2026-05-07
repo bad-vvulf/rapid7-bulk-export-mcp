@@ -18,6 +18,25 @@ Valid triage requires both:
 
 Stop if either is unavailable.
 
+### Atlassian Rovo re-auth rule
+
+Do not leave Atlassian access failures as an ambiguous plugin or Jira problem when the known re-auth pattern appears.
+
+Treat the issue as `Atlassian Rovo re-auth required` when one or more of these are true:
+
+- Atlassian Rovo Jira tools are attached but Jira search results are unexpectedly missing or incomplete
+- Jira access that worked previously in the same environment stops resolving expected `TRESEC` issues
+- Atlassian account identity resolves, but `TRESEC` coverage checks fail in a way that suggests stale connector auth
+- the user reports recent Codex/plugin updates and the local plugin appears enabled, but Jira-backed triage still does not behave normally
+
+When this pattern appears:
+
+- explicitly notify the user that Atlassian plugin re-auth is likely required
+- tell the user the fix path is: Codex `Plugins` -> `Atlassian Rovo` -> re-authenticate
+- after the user re-authenticates, re-run a live Jira check before continuing triage
+
+Do not describe this state only as `tool hydration`, `plugin failure`, or `Jira unavailable` if the re-auth pattern is the better explanation.
+
 ## Required Inputs
 
 You need:
@@ -38,6 +57,7 @@ Before triage:
 - confirm the `vulnerabilities` table is usable
 - if vulnerability data is missing or stale, run the Rapid7 MCP workflow needed to refresh or load current data before continuing
 - if current vulnerability data cannot be made available, stop
+- if Atlassian Rovo Jira access is stale or behaves like the re-auth pattern above, stop and instruct the user to re-authenticate the Atlassian plugin before continuing
 
 ### 2. Rank findings
 
@@ -359,3 +379,4 @@ Allowed PERA classifications:
 - Do not invoke Jira UI widgets, embedded app views, or `ui://widget/...` resources during triage
 - Use only non-UI Jira search, read, and action methods needed to evaluate remediation tickets and PERAs
 - If a Jira UI widget error appears but Jira data retrieval still works, treat it as non-blocking, ignore the widget failure, and continue triage
+- If Jira retrieval fails in a way consistent with stale Atlassian connector auth, notify the user that the likely fix is Codex `Plugins` -> `Atlassian Rovo` -> re-authenticate

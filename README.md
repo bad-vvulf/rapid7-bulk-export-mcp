@@ -39,6 +39,7 @@ This is done once a day and takes 1-5mins depending on the size of your org.
 - **SQL Query Execution**: Run complex SQL queries against vulnerability, asset and other data
 - **Schema Exploration**: Discover available data fields
 - **Statistics & Insights**: Get instant summaries and distributions
+- **Repo-Local Triage Workflow**: Includes a ticket-aware triage skill for deciding whether a finding is already covered in `TRESEC`, covered by an approved PERA, or needs a new ticket
 
 ## MCP Server Tools
 
@@ -340,6 +341,25 @@ Or:
 ```
 What's the severity distribution of my vulnerabilities?
 ```
+
+## Triage Workflow Notes
+
+This repo also contains a repo-local triage skill intended for ticket-aware vulnerability triage, not just raw Rapid7 ranking.
+
+That workflow requires:
+
+- current Rapid7 vulnerability data
+- live Atlassian Rovo Jira access to `TRESEC`
+
+If `TRESEC` triage suddenly stops finding expected Jira tickets, especially after it worked previously, treat that as a likely Atlassian connector auth problem before assuming the triage logic is wrong.
+
+In Codex, the first recovery step should be:
+
+1. Open `Plugins`
+2. Open `Atlassian Rovo`
+3. Re-authenticate
+
+After re-authentication, rerun a live Jira check before continuing triage.
 
 
 ## Architecture
